@@ -1,4 +1,3 @@
-# pages/4_Etudiant.py
 import streamlit as st
 from modules.generer_donnees import generer_donnees
 import pandas as pd
@@ -18,7 +17,7 @@ else:
 for col in required_cols_surveillances:
     if col not in surveillances.columns:
         st.warning(f"La colonne '{col}' est manquante dans la table surveillances. Les données pourraient être incomplètes.")
-        surveillances[col] = None  # Ajouter une colonne vide pour éviter les KeyError
+        surveillances[col] = None
 
 # --- Choix de rôle ---
 role = st.radio("Je suis :", ["Étudiant", "Professeur"])
@@ -44,8 +43,14 @@ if role == "Étudiant":
         else:
             modules_etu["libelle"] = None
 
+        # ✅ CORRECTION ICI : une seule salle par examen
         if not surveillances.empty:
-            modules_etu = modules_etu.merge(surveillances[["id_examen","id_salle"]], on="id_examen", how="left")
+            surveillances_unique = surveillances.drop_duplicates(subset=["id_examen"])
+            modules_etu = modules_etu.merge(
+                surveillances_unique[["id_examen","id_salle"]],
+                on="id_examen",
+                how="left"
+            )
         else:
             modules_etu["id_salle"] = None
 
